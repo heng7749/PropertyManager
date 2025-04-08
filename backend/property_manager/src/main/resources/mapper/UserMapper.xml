@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.UserMapper">
+    <update id="editUser">
+        update sys_user set
+            <if test="password!=null and password!=''">
+                password=#{password},
+            </if>
+            type = #{type},
+            bind_id=#{bindId}
+        where id = #{id}
+    </update>
+
+    <select id="selectPermsByUserId" resultType="java.lang.String">
+        select
+            distinct sm.perms
+        from
+            sys_user_role sur
+                left join sys_role_menu srm on sur.role_id = srm.role_id
+                left join sys_menu sm on srm.menu_id = sm.id
+        where sur.user_id = #{userId} and sm.perms is not null
+    </select>
+
+    <select id="selectUserMenuByUserId" resultType="com.heng.property_manager.pojo.entity.Menu">
+        select
+            sm.*
+        from
+            sys_user_role sur
+                left join sys_role_menu srm on sur.role_id = srm.role_id
+                left join sys_menu sm on srm.menu_id = sm.id
+        where sur.user_id = #{userId}
+    </select>
+
+    <resultMap id="userResultMap" type="com.heng.property_manager.pojo.vo.UserVo">
+        <id column="id" property="sid"/>
+        <result property="id" column="sid"/>
+        <result property="name" column="sname"/>
+        <result property="type" column="stype"/>
+        <result property="bindId" column="sbind_id"/>
+        <result property="avatar" column="savatar"/>
+        <result property="createBy" column="screate_by"/>
+        <result property="createTime" column="screate_time"/>
+        <association property="owner" javaType="com.heng.property_manager.pojo.entity.Owner">
+            <result property="id" column="oid"/>
+            <result property="name" column="oname"/>
+            <result property="gender" column="ogender"/>
+            <result property="phoneNumber" column="ophoneNumber"/>
+            <result property="email" column="oemail"/>
+            <result property="birthday" column="obirthday"/>
+            <result property="identification" column="oidentification"/>
+        </association>
+        <association property="employeeVo" javaType="com.heng.property_manager.pojo.vo.EmployeeVo">
+            <result property="id" column="eid"/>
+            <result property="name" column="ename"/>
+            <result property="gender" column="egender"/>
+            <result property="departmentId" column="edepartment_id"/>
+            <result property="position" column="eposition"/>
+            <result property="phoneNumber" column="ephoneNumber"/>
+            <result property="email" column="eemail"/>
+            <result property="birthday" column="ebirthday"/>
+            <result property="identification" column="eidentification"/>
+            <result property="address" column="eaddress"/>
+            <result property="salary" column="esalary"/>
+            <result property="department" column="edepartment"/>
+        </association>
+    </resultMap>
+    <select id="listUsers" resultMap="userResultMap">
+        SELECT
+            s.id sid,s.name sname,s.type stype,s.bind_id sbind_id,s.avatar savatar,s.create_by screate_by,s.create_time screate_time,
+            o.id oid,o.name oname,o.gender ogender,o.phoneNumber ophoneNumber,o.email oemail,o.birthday obirthday,o.identification oidentification,
+            e.id eid,e.name ename,e.gender egender,e.department_id edepartment_id,e.position eposition,e.phoneNumber ephoneNumber,e.email eemail,e.birthday ebirthday,e.identification eidentification,e.address eaddress,e.salary esalary,(SELECT name FROM department WHERE id = e.department_id) edepartment
+        FROM sys_user s
+            LEFT JOIN owner o ON s.type = 0
+            LEFT JOIN employee e ON s.type = 1
+        <where>
+            s.is_deleted = 0 AND (s.bind_id = o.id OR s.bind_id = e.id)
+            <if test="name!=null and name!=''">
+                and s.name like concat('%',#{name},'%')
+            </if>
+            <if test="type!=null">
+                and s.type = #{type}
+            </if>
+            <if test="departmentId!=null">
+                and e.department_id = #{departmentId}
+            </if>
+        </where>
+        order by s.id desc
+    </select>
+
+    <select id="searchRoles" resultType="com.heng.property_manager.pojo.entity.Role">
+        SELECT * FROM sys_role
+        <where>
+            is_deleted = 0
+            <if test="name!=null and name!=''">
+                and name like concat('%',#{name},'%')
+            </if>
+        </where>
+    </select>
+    <select id="searchRoleUsers" resultType="com.heng.property_manager.pojo.vo.UserVo">
+        SELECT
+            su.*,sur.id surId
+        FROM sys_user su
+            LEFT JOIN sys_user_role sur ON sur.user_id = su.id
+            LEFT JOIN sys_role sr ON sr.id = sur.role_id
+        <where>
+            sr.is_deleted = 0 and sr.id = #{id}
+            <if test="userName!=null and userName!=''">
+                and su.name like concat('%',#{userName},'%')
+            </if>
+            <if test="userType!=null">
+                and su.type = #{userType}
+            </if>
+        </where>
+        order by sur.id desc
+    </select>
+
+</mapper>

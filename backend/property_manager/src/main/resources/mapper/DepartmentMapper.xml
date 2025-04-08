@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.DepartmentMapper">
+    <select id="searchDepartment" resultType="com.heng.property_manager.pojo.vo.DepartmentVo">
+        select d.*,e.name creator from department d left join employee e on d.create_by = e.id
+        where d.is_deleted = 0
+        <if test="name!=null and name!=''">
+            and d.name like concat('%',#{name},'%')
+        </if>
+        order by d.id desc
+    </select>
+</mapper>

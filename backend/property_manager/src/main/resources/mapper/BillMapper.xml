@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.BillMapper">
+    <select id="searchBill" resultType="com.heng.property_manager.pojo.vo.BillVo">
+        SELECT
+            b.id,b.house_id,b.bill_type_id,b.count,b.money,b.status,b.start_time,b.end_time,b.create_by,b.create_time,b.update_by,b.update_time,
+            o.name ownerName,o.phoneNumber,o.email,
+            CONCAT(bd.name,h.unit,'单元',h.floor,'层',h.name) address,
+            bt.name billTypeName,bt.unit_price unitPrice
+        FROM bill b
+        LEFT JOIN bill_type bt on b.bill_type_id = bt.id
+        LEFT JOIN house h on h.id = b.house_id
+        LEFT JOIN building bd on h.building_id = bd.id
+        LEFT JOIN owner o on h.owner_id = o.id
+        <where>
+            o.is_deleted = 0
+            <if test="ownerName!=null and ownerName!=''">
+                and o.name like concat('%',#{ownerName},'%')
+            </if>
+            <if test="buildingId!=null and buildingId!=''">
+                and h.building_id = #{buildingId}
+            </if>
+            <if test="unit!=null and unit!=''">
+                and h.unit = #{unit}
+            </if>
+            <if test="floor!=null and floor!=''">
+                and h.floor = #{floor}
+            </if>
+            <if test="billTypeId!=null and billTypeId!=''">
+                and b.bill_type_id = #{billTypeId}
+            </if>
+            <if test="status!=null and status!=''">
+                and b.status = #{status}
+            </if>
+        </where>
+        ORDER BY b.create_time DESC
+    </select>
+    <select id="listUserBills" resultType="com.heng.property_manager.pojo.vo.BillVo">
+        SELECT
+            b.id,b.house_id,b.bill_type_id,b.count,b.money,b.status,b.start_time,b.end_time,b.create_by,b.create_time,b.update_by,b.update_time,
+            CONCAT(bd.name,h.unit,'单元',h.floor,'层',h.name) address,
+            bt.name billTypeName,bt.unit_price unitPrice
+        FROM bill b
+            LEFT JOIN house h ON h.id = b.house_id
+            LEFT JOIN sys_user s ON s.bind_id = h.owner_id
+            LEFT JOIN bill_type bt ON b.bill_type_id = bt.id
+            LEFT JOIN building bd ON h.building_id = bd.id
+        <where>
+            b.is_deleted = 0 and s.type = 0 and s.id = #{ownerId}
+            <if test="status!=null and status!=''">
+                and b.status = #{status}
+            </if>
+            <if test="billTypeId!=null and billTypeId!=''">
+                and b.bill_type_id = #{billTypeId}
+            </if>
+        </where>
+        ORDER BY b.create_time DESC
+    </select>
+</mapper>

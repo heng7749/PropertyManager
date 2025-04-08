@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.OwnerMapper">
+    <select id="searchByHouse" resultType="com.heng.property_manager.pojo.vo.OwnerVo">
+        select
+            o.id,o.name,o.gender,o.phoneNumber,o.email,o.birthday,o.identification,CONCAT(b.name,h.unit,'单元',h.floor,'层',h.name) address
+        from owner o
+            left join house h on o.id = h.owner_id
+            left join building b on h.building_id = b.id
+        <where>
+            o.is_deleted = 0
+            <if test="name!=null and name!=''">
+                and o.name like concat('%',#{name},'%')
+            </if>
+            <if test="buildingId!=null and buildingId!=''">
+                and h.building_id = #{buildingId}
+            </if>
+            <if test="unit!=null and unit!=''">
+                and h.unit = #{unit}
+            </if>
+            <if test="floor!=null and floor!=''">
+                and h.floor = #{floor}
+            </if>
+        </where>
+        ORDER BY o.id DESC
+    </select>
+</mapper>

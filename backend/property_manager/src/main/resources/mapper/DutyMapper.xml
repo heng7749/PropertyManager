@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.DutyMapper">
+    <resultMap id="dutyResultMap" type="com.heng.property_manager.pojo.vo.DutyVo">
+        <id column="id" property="id"/>
+        <result property="id" column="dtid"/>
+        <result property="employeeId" column="dtemployee_id"/>
+        <result property="shift" column="dtshift"/>
+        <result property="job" column="dtjob"/>
+        <result property="attendedDate" column="dtattended_date"/>
+        <result property="createTime" column="dtcreate_time"/>
+        <result property="createBy" column="dtcreate_by"/>
+        <result property="department" column="dpname"/>
+        <association property="employee" javaType="com.heng.property_manager.pojo.entity.Employee">
+            <result property="id" column="eid"/>
+            <result property="name" column="ename"/>
+            <result property="gender" column="egender"/>
+            <result property="departmentId" column="edepartment_id"/>
+            <result property="position" column="eposition"/>
+            <result property="phoneNumber" column="ephoneNumber"/>
+            <result property="email" column="eemail"/>
+            <result property="birthday" column="ebirthday"/>
+            <result property="identification" column="eidentification"/>
+            <result property="address" column="eaddress"/>
+            <result property="salary" column="esalary"/>
+        </association>
+    </resultMap>
+    <select id="searchDuty" resultMap="dutyResultMap">
+        SELECT
+            dt.id dtid, dt.employee_id dtemployee_id, dt.shift dtshift, dt.job dtjob, dt.attended_date dtattended_date, dt.create_time dtcreate_time, dt.create_by dtcreate_by,
+            e.id eid,e.name ename,e.gender egender,e.department_id edepartment_id,e.position eposition,e.phoneNumber ephoneNumber,e.email eemail,e.birthday ebirthday,e.identification eidentification,e.address eaddress,e.salary esalary,
+            dp.name dpname
+        FROM duty dt
+            LEFT JOIN employee e ON dt.employee_id = e.id
+            LEFT JOIN department dp ON e.department_id = dp.id
+        <where>
+            dt.is_deleted = 0 AND  DATE_FORMAT(dt.attended_date,'%Y%m') = DATE_FORMAT(#{dutyMonth},'%Y%m')
+            <if test="departmentId!=null and departmentId!=''">
+                AND e.department_id = #{departmentId}
+            </if>
+        </where>
+    </select>
+
+    <select id="searchDutyByAttendedDate" resultMap="dutyResultMap">
+        SELECT
+            dt.id dtid, dt.employee_id dtemployee_id, dt.shift dtshift, dt.job dtjob, dt.attended_date dtattended_date, dt.create_time dtcreate_time, dt.create_by dtcreate_by,
+            e.id eid,e.name ename,e.gender egender,e.department_id edepartment_id,e.position eposition,e.phoneNumber ephoneNumber,e.email eemail,e.birthday ebirthday,e.identification eidentification,e.address eaddress,e.salary esalary,
+            dp.name dpname
+        FROM duty dt
+            LEFT JOIN employee e ON dt.employee_id = e.id
+            LEFT JOIN department dp ON e.department_id = dp.id
+        <where>
+            dt.is_deleted = 0 AND  dt.attended_date = #{attendedDate}
+            <if test="departmentId!=null and departmentId!=''">
+                AND e.department_id = #{departmentId}
+            </if>
+        </where>
+    </select>
+</mapper>

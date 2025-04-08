@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.EquipmentMapper">
+    <select id="searchEquipments" resultType="com.heng.property_manager.pojo.vo.EquipmentVo">
+        SELECT
+            eq.id,eq.name,eq.type,eq.model,eq.deployPlace,eq.department_id,eq.status,eq.deploy_time,eq.purchasing_time,eq.producer,eq.repairsPeriod,eq.replacePeriod,eq.create_by,eq.create_time,eq.remark,
+            em.name creator,
+            d.name departmentName
+        FROM equipment eq
+        LEFT JOIN department d ON eq.department_id = d.id
+        LEFT JOIN employee em on eq.create_by = em.id
+        <where>
+            eq.is_deleted = 0
+            <if test="name!=null and name!=''">
+                and eq.name like concat('%',#{name},'%')
+            </if>
+            <if test="deployPlace!=null and deployPlace!=''">
+                and eq.deployPlace like concat('%',#{deployPlace},'%')
+            </if>
+            <if test="departmentId!=null">
+                and eq.department_id = #{departmentId}
+            </if>
+            <if test="type!=null">
+                and eq.type = #{type}
+            </if>
+            <if test="deployTime!=null and deployTime!=''">
+                and eq.deploy_time = #{deployTime}
+            </if>
+            <if test="purchasingTime!=null and purchasingTime!=''">
+                and eq.purchasing_time = #{purchasingTime}
+            </if>
+            <if test="status!=null">
+                and eq.status = #{status}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="searchMaintenances" resultType="com.heng.property_manager.pojo.vo.MaintenanceVo">
+        SELECT
+            m.id,m.equipment_id,m.status,m.maintainer_id,m.maintain_date,m.maintain_target_date,m.remark,
+            eq.name equipmentName,eq.type,eq.model,eq.deployPlace,eq.department_id,eq.deploy_time,eq.purchasing_time,eq.producer,eq.repairsPeriod,eq.replacePeriod,
+            em.name maintainer,
+            dp.name departmentName
+        FROM maintenance m
+                 LEFT JOIN equipment eq ON m.equipment_id = eq.id
+                 LEFT JOIN employee em ON m.maintainer_id = em.id
+                 LEFT JOIN department dp ON dp.id = eq.department_id
+        <where>
+            m.is_deleted = 0
+            <if test="equipmentName!=null and equipmentName!=''">
+                and eq.name like concat('%',#{equipmentName},'%')
+            </if>
+            <if test="deployPlace!=null and deployPlace!=''">
+                and eq.deployPlace like concat('%',#{deployPlace},'%')
+            </if>
+            <if test="departmentId!=null">
+                and eq.department_id = #{departmentId}
+            </if>
+            <if test="type!=null">
+                and eq.type = #{type}
+            </if>
+            <if test="maintainDate!=null">
+                and m.maintain_date = #{maintainDate}
+            </if>
+            <if test="status!=null">
+                and m.status = #{status}
+            </if>
+        </where>
+        order by id desc
+    </select>
+</mapper>

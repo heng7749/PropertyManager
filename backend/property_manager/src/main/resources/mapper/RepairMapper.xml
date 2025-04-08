@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.RepairMapper">
+    <update id="editRepair">
+        update repair
+        set type=#{type}, phoneNumber=#{phoneNumber},contents=#{contents}
+        <if test="photo!=null and photo!=''">
+            ,photo=#{photo}
+        </if>
+        where id=#{id}
+    </update>
+    <select id="searchRepairs" resultType="com.heng.property_manager.pojo.vo.RepairVo">
+        SELECT
+            r.id,r.type,r.phoneNumber,r.contents,r.photo,r.status,r.create_time,r.update_time,r.update_by,r.repairer_id,r.feedback,
+            h.building_id,h.unit,h.floor,h.name houseName,
+            o.id ownerId,o.name ownerName,
+            e.name repairer,
+            b.name buildingName
+        FROM repair r
+                 LEFT JOIN house h ON r.house_id = h.id
+                 LEFT JOIN building b ON b.id = h.building_id
+                 LEFT JOIN owner o ON h.owner_id = o.id
+                 LEFT JOIN employee e ON r.repairer_id = e.id
+        <where>
+            r.is_deleted = 0
+            <if test="ownerName!=null and ownerName!=''">
+                and o.name like concat('%',#{ownerName},'%')
+            </if>
+            <if test="buildingId!=null">
+                and h.building_id = #{buildingId}
+            </if>
+            <if test="unit!=null">
+                and h.unit = #{unit}
+            </if>
+            <if test="floor!=null">
+                and h.floor = #{floor}
+            </if>
+            <if test="type!=null">
+                and r.floor = #{type}
+            </if>
+            <if test="status!=null">
+                and r.status = #{status}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="listUserRepairRecords" resultType="com.heng.property_manager.pojo.vo.RepairVo">
+        SELECT
+            r.id,r.type,r.phoneNumber,r.contents,r.photo,r.status,r.create_time,r.update_time,r.update_by,r.repairer_id,r.feedback,
+            h.id houseId,h.building_id,h.unit,h.floor,h.name houseName,
+            e.name repairer,
+            b.name buildingName
+        FROM sys_user u
+                 LEFT JOIN house h ON h.owner_id = u.bind_id
+                 LEFT JOIN repair r ON r.house_id = h.id
+                 LEFT JOIN building b ON b.id = h.building_id
+                 LEFT JOIN employee e ON r.repairer_id = e.id
+        <where>
+            u.type = 0 and u.id = #{ownerId} and r.is_deleted = 0
+            <if test="type!=null">
+                and r.type = #{type}
+            </if>
+            <if test="status!=null">
+                and r.status = #{status}
+            </if>
+        </where>
+        order by id desc
+    </select>
+</mapper>

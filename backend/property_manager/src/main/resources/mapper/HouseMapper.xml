@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.HouseMapper">
+    <select id="searchHouse" resultType="com.heng.property_manager.pojo.entity.House">
+        select * from house
+        <where>
+            is_deleted = 0
+            <if test="buildingId!=null and buildingId!=''">
+                and building_id = #{buildingId}
+            </if>
+            <if test="unit!=null and unit!=''">
+                and unit = #{unit}
+            </if>
+            <if test="floor!=null and floor!=''">
+                and floor = #{floor}
+            </if>
+        </where>
+        ORDER BY h.id DESC
+    </select>
+
+    <resultMap id="houseResultMap" type="com.heng.property_manager.pojo.entity.House">
+        <id column="id" property="hid"/>
+        <result property="id" column="hid"/>
+        <result property="ownerId" column="hownerId"/>
+        <result property="buildingId" column="hbuildingId"/>
+        <result property="unit" column="hunit"/>
+        <result property="floor" column="hfloor"/>
+        <result property="name" column="hname"/>
+        <result property="houseType" column="hhouseType"/>
+        <result property="floorSpace" column="hfloorSpace"/>
+        <result property="status" column="hstatus"/>
+        <result property="remark" column="hremark"/>
+        <association property="owner" javaType="com.heng.property_manager.pojo.entity.Owner">
+            <result property="id" column="oid"/>
+            <result property="name" column="oname"/>
+            <result property="gender" column="ogender"/>
+            <result property="phoneNumber" column="ophoneNumber"/>
+            <result property="email" column="oemail"/>
+            <result property="birthday" column="obirthday"/>
+            <result property="identification" column="oidentification"/>
+        </association>
+    </resultMap>
+    <select id="searchHouseByOwnerName" resultMap="houseResultMap">
+        SELECT h.id hid, h.owner_id hownerId, h.building_id hbuildingId, h.unit hunit,h.floor hfloor,h.name hname,h.houseType hhouseType,h.floorSpace hfloorSpace,h.status hstatus,h.remark hremark,
+               o.id oid, o.name oname, o.gender ogender, o.phoneNumber ophoneNumber, o.email oemail, o.birthday obirthday, o.identification oidentification
+        FROM owner o LEFT JOIN house h on o.id =  h.owner_id
+        <where>
+            h.is_deleted = 0
+            <if test="searchValue!=null and searchValue!=''">
+                and o.name like concat('%',#{searchValue},'%')
+            </if>
+            <if test="buildingId!=null and buildingId!=''">
+                and h.building_id = #{buildingId}
+            </if>
+            <if test="unit!=null and unit!=''">
+                and h.unit = #{unit}
+            </if>
+            <if test="floor!=null and floor!=''">
+                and h.floor = #{floor}
+            </if>
+        </where>
+        ORDER BY h.id DESC
+    </select>
+</mapper>

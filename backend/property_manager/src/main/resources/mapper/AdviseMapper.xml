@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.AdviseMapper">
+    <select id="searchAdvice" resultType="com.heng.property_manager.pojo.vo.AdviseVo">
+        SELECT
+            o.name ownerName,
+            a.id,a.owner_id,a.type,a.subject,a.contents,a.status,a.feedback,a.create_time,a.update_by,a.update_time,
+            (SELECT CONCAT(b.name,h.unit,'单元',h.floor,'层',h.name) FROM house h LEFT JOIN building b ON h.building_id = b.id
+                WHERE owner_id = a.owner_id LIMIT 1) address,
+            e.name conductor
+        FROM owner o
+            LEFT JOIN advise a ON o.id = a.owner_id
+            LEFT JOIN employee e ON a.update_by = e.id
+        <where>
+            a.is_deleted = 0
+            <if test="subject!=null and subject!=''">
+                and a.subject like concat('%',#{subject},'%')
+            </if>
+            <if test="type!=null">
+                and a.type = #{type}
+            </if>
+            <if test="status!=null">
+                and a.status = #{status}
+            </if>
+        </where>
+        order by id desc
+    </select>
+    <select id="listUserAdvice" resultType="com.heng.property_manager.pojo.vo.AdviseVo">
+        SELECT
+            a.id,a.owner_id,a.type,a.subject,a.contents,a.status,a.feedback,a.create_time,a.update_by,a.update_time,
+            e.name conductor
+        FROM sys_user s
+            LEFT JOIN advise a ON s.bind_id = a.owner_id
+            LEFT JOIN employee e ON a.update_by = e.id
+        <where>
+            s.type = 0 and a.is_deleted = 0 and s.id = #{ownerId}
+            <if test="subject!=null and subject!=''">
+                and a.subject like concat('%',#{subject},'%')
+            </if>
+            <if test="type!=null">
+                and a.type = #{type}
+            </if>
+            <if test="status!=null">
+                and a.status = #{status}
+            </if>
+        </where>
+        order by id desc
+    </select>
+</mapper>

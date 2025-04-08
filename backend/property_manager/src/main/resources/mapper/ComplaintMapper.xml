@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.ComplaintMapper">
+    <select id="searchComplaints" resultType="com.heng.property_manager.pojo.vo.ComplaintVo">
+        SELECT
+            o.name ownerName,
+            c.id,c.owner_id,c.type,c.subject,c.contents,c.status,c.phoneNumber,c.feedback,c.create_time,c.update_by,c.update_time,
+            (SELECT CONCAT(b.name,h.unit,'单元',h.floor,'层',h.name) FROM house h LEFT JOIN building b ON h.building_id = b.id
+                WHERE owner_id = c.owner_id LIMIT 1) address,
+            e.name conductor
+        FROM owner o
+            LEFT JOIN complaint c ON o.id = c.owner_id
+            LEFT JOIN employee e ON c.update_by = e.id
+        <where>
+            c.is_deleted = 0
+            <if test="subject!=null and subject!=''">
+                and c.subject like concat('%',#{subject},'%')
+            </if>
+            <if test="type!=null">
+                and c.type = #{type}
+            </if>
+            <if test="status!=null">
+                and c.status = #{status}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="listUserComplaints" resultType="com.heng.property_manager.pojo.vo.ComplaintVo">
+        SELECT
+            c.id,c.owner_id,c.type,c.subject,c.contents,c.status,c.phoneNumber,c.feedback,c.create_time,c.update_by,c.update_time,
+            e.name conductor
+        FROM sys_user s
+            LEFT JOIN complaint c ON s.bind_id = c.owner_id
+            LEFT JOIN employee e ON c.update_by = e.id
+        <where>
+            s.type = 0 AND c.is_deleted = 0 and s.id = #{ownerId}
+            <if test="subject!=null and subject!=''">
+                and c.subject like concat('%',#{subject},'%')
+            </if>
+            <if test="type!=null">
+                and c.type = #{type}
+            </if>
+            <if test="status!=null">
+                and c.status = #{status}
+            </if>
+        </where>
+        order by id desc
+    </select>
+</mapper>

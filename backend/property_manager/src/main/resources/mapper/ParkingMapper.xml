@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heng.property_manager.mapper.ParkingMapper">
+    <select id="searchStall" resultType="com.heng.property_manager.pojo.vo.StallVo">
+        SELECT
+            s.id,s.parking_lot_id,s.area,s.stallNumber,s.status,s.condition,s.owner_id,
+            o.name ownerName,o.phoneNumber,
+            p.name parkingLotName
+        FROM stall s
+            LEFT JOIN parking_lot p on s.parking_lot_id = p.id
+            LEFT JOIN owner o on s.owner_id = o.id
+        <where>
+            s.is_deleted = 0
+            <if test="stallNumber!=null and stallNumber!=''">
+                and s.stallNumber like concat('%',#{stallNumber},'%')
+            </if>
+            <if test="parkingLotId!=null and parkingLotId!=''">
+                and s.parking_lot_id = #{parkingLotId}
+            </if>
+            <if test="area!=null and area!=''">
+                and s.area = #{area}
+            </if>
+            <if test="status!=null and status!=''">
+                and s.status = #{status}
+            </if>
+        </where>
+        ORDER BY s.id DESC
+    </select>
+
+    <select id="searchParkingRecords" resultType="com.heng.property_manager.pojo.vo.ParkingVo">
+        SELECT
+            p.id,p.car_id,p.stall_id,p.start_time,p.end_time,p.status,p.bill_type_id,p.money,p.create_time,p.create_by,p.update_time,p.update_by,p.remark,
+            c.carNumber,c.ownerName,c.phoneNumber,c.owner_id,
+            s.parking_lot_id,s.area,s.stallNumber,
+            pl.name parkingLotName
+        FROM parking p
+                 LEFT JOIN car c on p.car_id = c.id
+                 LEFT JOIN stall s on p.stall_id = s.id
+                 LEFT JOIN parking_lot pl on s.parking_lot_id = pl.id
+        <where>
+            p.is_deleted = 0
+            <if test="carNumber!=null and carNumber!=''">
+                and c.carNumber like concat('%',#{carNumber},'%')
+            </if>
+            <if test="parkingLotId!=null and parkingLotId!=''">
+                and s.parking_lot_id = #{parkingLotId}
+            </if>
+            <if test="area!=null and area!=''">
+                and s.area = #{area}
+            </if>
+            <if test="status!=null and status!=''">
+                and p.status = #{status}
+            </if>
+        </where>
+        ORDER BY p.id DESC
+    </select>
+</mapper>
